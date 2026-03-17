@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { Asset } from '@/types';
@@ -15,7 +15,7 @@ interface KlingParams {
   negativePrompt: string;
 }
 
-export default function GeneratePage() {
+function GeneratePageInner() {
   const searchParams = useSearchParams();
   const { addAsset, updateAsset } = useStore();
 
@@ -303,11 +303,10 @@ export default function GeneratePage() {
               <button
                 key={opt.value}
                 onClick={() => setMode(opt.value)}
-                className={`p-4 rounded-xl border text-left transition-all duration-200 ${
-                  mode === opt.value
+                className={`p-4 rounded-xl border text-left transition-all duration-200 ${mode === opt.value
                     ? 'border-purple-500 bg-purple-600/10'
                     : 'border-gray-700 bg-gray-800 hover:border-gray-600'
-                }`}
+                  }`}
               >
                 <span className={`text-xs px-2 py-0.5 rounded-full ${opt.badgeStyle} mb-2 inline-block`}>
                   {opt.badge}
@@ -379,11 +378,10 @@ export default function GeneratePage() {
                     <button
                       key={m}
                       onClick={() => setKlingParams((p) => ({ ...p, mode: m }))}
-                      className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                        klingParams.mode === m
+                      className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${klingParams.mode === m
                           ? 'bg-purple-600 border-purple-500 text-white'
                           : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600'
-                      }`}
+                        }`}
                     >
                       {m.toUpperCase()}
                     </button>
@@ -397,11 +395,10 @@ export default function GeneratePage() {
                     <button
                       key={d}
                       onClick={() => setKlingParams((p) => ({ ...p, duration: d }))}
-                      className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                        klingParams.duration === d
+                      className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${klingParams.duration === d
                           ? 'bg-purple-600 border-purple-500 text-white'
                           : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600'
-                      }`}
+                        }`}
                     >
                       {d}s
                     </button>
@@ -527,13 +524,13 @@ export default function GeneratePage() {
                     className="w-full rounded-xl border border-gray-700"
                   />
                 )}
-                {currentAsset.params?.geminiResult && (
+                {currentAsset.params?.geminiResult ? (
                   <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
                     <p className="text-sm text-gray-300 whitespace-pre-wrap">
-                      {currentAsset.params.geminiResult as string}
+                      {String(currentAsset.params.geminiResult)}
                     </p>
                   </div>
-                )}
+                ) : null}
                 <div className="mt-3 flex gap-2">
                   {currentAsset.url && (
                     <a
@@ -563,5 +560,17 @@ export default function GeneratePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function GeneratePage() {
+  return (
+    <Suspense fallback={
+      <div className="p-8 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <GeneratePageInner />
+    </Suspense>
   );
 }
